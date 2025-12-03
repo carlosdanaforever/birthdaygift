@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haiku's for my Pretty Birthday Girl! 💖</title>
+    <style>
+        /* CSS for Styling */
+        :root {
+            /* Base Pink Palette */
+            --light-pink: #FFDDE2;
+            --darker-pink: #F7A3B7;
+            --text-color: #4B0000;
+            --button-color: #E06C75;
+            --heart-color: #FF69B4;
+            --gradient-start: #FFDDE2;
+            --gradient-end: #FFEAF0;
+        }
+
+        /* --- Fixes Blue Tap/Click Highlight --- */
+        * {
+            -webkit-tap-highlight-color: transparent; 
+            -webkit-touch-callout: none;
+            user-select: none; 
+            outline: none !important;
+        }
+
+        /* NEW: Custom Scrollbar Styling (Desktop Polish) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fce4ec; /* Lighter pink track */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFB6C1; /* Soft pink thumb */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--button-color); /* Darker on hover */
+        }
+
+        /* Adaptive Color Variables (Used by JS for Adaptive Color Shift) */
+        body {
+            /* This JS variable will be updated for the adaptive color shift */
+            --haiku-bg-color: var(--gradient-start); 
+            /* Gradient Background */
+            background-image: linear-gradient(135deg, var(--haiku-bg-color) 0%, var(--gradient-end) 100%);
+            background-color: var(--haiku-bg-color); /* Fallback */
+            background-attachment: fixed; 
+        }
+
+        .color-transition {
+            transition: background-color 1.5s ease; /* Smooth transition for color changes */
+        }
+        
+        /* ENHANCEMENT #1: Custom Cursor */
+        body {
+            font-family: 'Arial', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewport="0 0 100 100" style="fill:red;font-size:30px;"><text y="28">💖</text></svg>') 8 8, pointer;
+            overflow-x: hidden;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            width: 90%;
+            opacity: 1;
+            transition: opacity 1s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Standard Styling --- */
+        #landing-page h1 { font-size: 3em; margin-bottom: 20px; color: var(--text-color); }
+        #landing-page p { font-size: 1.2em; margin: 0 0 40px 0; color: var(--text-color); }
+        
+        /* Button Styling with Gradient */
+        #begin-button, .nav-buttons button, #restart-button {
+            padding: 15px 40px; font-size: 1.5em; cursor: pointer; border: none; border-radius: 8px;
+            background-image: linear-gradient(135deg, var(--button-color) 0%, #FF8A96 100%); 
+            color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+        #begin-button:hover, .nav-buttons button:hover:not(:disabled), #restart-button:hover { 
+            background-image: linear-gradient(135deg, #FF8A96 0%, var(--button-color) 100%);
+            transform: translateY(-1px);
+        }
+        /* Button Depress Feedback */
+        #begin-button:active, .nav-buttons button:active:not(:disabled), #restart-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .nav-buttons button:disabled { background-image: none; background-color: #F0C3C3; cursor: not-allowed; box-shadow: none; }
+        
+        #haiku-viewer { display: none; animation: fadeIn 1s ease forwards; }
+        .haiku-box {
+            background-color: var(--darker-pink); padding: 40px 20px; border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); margin-bottom: 20px; position: relative;
+            min-height: 150px; display: flex; flex-direction: column; justify-content: center;
+            align-items: center;
+        }
+        .haiku-text {
+            white-space: pre-wrap; font-size: 1.8em; font-weight: bold; line-height: 1.5;
+            color: white; margin: 0; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            min-height: 7.5rem; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            /* Typewriter Cursor Styling */
+            caret-color: #FFC0CB; 
+        }
+        
+        /* Shared Time-Stamp Styling */
+        #current-time { display: block; margin-bottom: 15px; font-size: 0.9em; color: var(--text-color); opacity: 0.8; }
+        .haiku-counter { 
+            margin-top: 15px; font-size: 1.1em; color: var(--text-color); 
+            transition: all 0.2s ease;
+        }
+
+        /* Focus Shift Animation Styling */
+        .counter-flash {
+            color: var(--heart-color);
+            font-size: 1.3em;
+            transform: scale(1.1);
+            font-weight: bold;
+        }
+        
+        .heart-decoration { position: absolute; font-size: 3em; color: var(--heart-color); opacity: 0.8; pointer-events: none; text-shadow: 0 0 5px rgba(255, 105, 180, 0.5); }
+        .heart-top-left { top: 5px; left: 10px; transform: rotate(-20deg); }
+        .heart-top-right { top: 5px; right: 10px; transform: rotate(20deg); }
+        .heart-bottom-left { bottom: 5px; left: 10px; transform: rotate(15deg); }
+        .heart-bottom-right { bottom: 5px; right: 10px; transform: rotate(-15deg); }
+        
+        /* Final Screen Styling */
+        #final-screen {
+            display: none; animation: fadeIn 1s ease forwards; padding: 50px;
+            border-radius: 15px; background-color: var(--darker-pink); color: white;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            touch-action: manipulation; 
+        }
+        #final-screen h2 { font-size: 3em; margin-bottom: 15px; color: #FFC0CB; }
+        #final-screen p { font-size: 1.5em; line-height: 1.6; margin-bottom: 30px; }
+
+        /* Hidden Message Unlock Styling */
+        #secret-message {
+            display: inline-block; 
+            opacity: 0.05; /* Message starts nearly invisible */
+            transition: opacity 1.5s ease-in-out; 
+            font-weight: bold; 
+            color: #FFC0CB; 
+            cursor: pointer; 
+            font-size: 1.8em;
+        }
+        
+        /* REMOVED: #final-screen:hover #secret-message { opacity: 1; } */
+        
+        .revealed { 
+            opacity: 1 !important; /* This class is added by JS on click */
+        }
+
+        /* Progress Bar Styling */
+        #progress-container { width: 100%; height: 10px; background-color: #fce4ec; border-radius: 5px; margin-bottom: 25px; box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); }
+        #progress-bar { height: 100%; width: 0%; background-image: linear-gradient(90deg, #F06292 0%, #FFB6C1 100%); border-radius: 5px; transition: width 0.6s ease-in-out; }
+
+        /* Custom Image Animation Styles */
+        .heart-bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 1; }
+        .heart { position: absolute; display: block; min-width: 1px; min-height: 1px; opacity: 0.8; background-size: auto; background-repeat: no-repeat; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); animation: animate-heart 15s linear infinite; bottom: -100px; }
+        
+        /* Custom image URLs and sizes for variety */
+        .heart:nth-child(1) { background-image: url('https://i.postimg.cc/903Dk10Z/6556D496-B0A0-4AA8-A771-235645F8CEEC.jpg'); left: 10%; animation-duration: 15s; animation-delay: 0s; width: 80px; height: 80px; background-size: contain; }
+        .heart:nth-child(2) { background-image: url('https://i.postimg.cc/Kz3KQCG7/CD779941-E16B-4775-92F6-3F943333B895.jpg'); left: 20%; animation-duration: 12s; animation-delay: 2s; width: 60px; height: 60px; background-size: contain; opacity: 0.6;}
+        .heart:nth-child(3) { background-image: url('https://i.postimg.cc/903Dk10Z/6556D496-B0A0-4AA8-A771-235645F8CEEC.jpg'); left: 25%; animation-duration: 18s; animation-delay: 4s; opacity: 0.4; width: 100px; height: 100px; background-size: contain;}
+        .heart:nth-child(4) { background-image: url('https://i.postimg.cc/1Xx8dMX6/D7FB62FC-4139-40FE-A60C-4B3F8461BBB3.jpg'); left: 40%; animation-duration: 10s; animation-delay: 0s; width: 70px; height: 70px; background-size: contain;}
+        .heart:nth-child(5) { background-image: url('https://i.postimg.cc/Kz3KQCG7/CD779941-E16B-4775-92F6-3F943333B895.jpg'); left: 70%; animation-duration: 16s; animation-delay: 5s; width: 50px; height: 50px; background-size: contain; opacity: 0.7;}
+        .heart:nth-child(6) { background-image: url('https://i.postimg.cc/1Xx8dMX6/D7FB62FC-4139-40FE-A60C-4B3F8461BBB3.jpg'); left: 80%; animation-duration: 13s; animation-delay: 1s; width: 90px; height: 90px; background-size: contain; opacity: 0.5;}
+
+        @keyframes animate-heart {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Animation for fading in the screens */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="color-transition">
+
+    <div class="heart-bg-animation">
+        <span class="heart"></span>
+        <span class="heart"></span>
+        <span class="heart"></span>
+        <span class="heart"></span>
+        <span class="heart"></span>
+        <span class="heart"></span>
+    </div>
+
+    <div class="container">
+
+        <div id="landing-page">
+            <h1>Haiku's for my Pretty Birthday Girl! 💖</h1>
+            <p>
+                Please click **Begin** to unlock a small collection of my thoughts, sent across the miles just for you.
+            </p>
+            <button id="begin-button">Begin</button>
+        </div>
+
+        <div id="haiku-viewer">
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+
+            <span id="current-time"></span>
+
+            <div class="haiku-box">
+                <span class="heart-decoration heart-top-left">❤️</span>
+                <span class="heart-decoration heart-top-right">💖</span>
+                <span class="heart-decoration heart-bottom-left">💖</span>
+                <span class="heart-decoration heart-bottom-right">❤️</span>
+                
+                <p id="haiku-content" class="haiku-text"></p>
+            </div>
+
+            <div id="haiku-counter" class="haiku-counter">
+                Haiku <span id="current-haiku">1</span> of <span id="total-haikus">52</span>
+            </div>
+
+            <div class="nav-buttons">
+                <button id="back-button" disabled>Back</button>
+                <button id="next-button">Next</button>
+            </div>
+        </div>
+        
+        <div id="final-screen">
+            <h2>🎉 HAPPY BIRTHDAY, MY LOVE! 🎉</h2>
+            <p>
+                Those were 52 tiny windows into my heart. Thank you for reading them.<br>
+                Though we are far, know that my love is always near.<br><br>
+                <span id="secret-message">I love you more than words can say.</span>
+                <br>
+                <small style="opacity: 0.7;">(Tap or move mouse over this section to see the final message!)</small>
+            </p>
+            
+            <button id="restart-button" style="margin-top: 25px; padding: 10px 30px;">
+                Read Again ❤️
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // ** JAVASCRIPT FOR INTERACTIVITY AND HAIKU CONTENT **
+
+        // ** YOUR 52 HAIKUS ARE LISTED BELOW. (BUG FIXED: Duplicate removed) **
+        const haikus = [
+            "Your kind spirit shines,\nI cherish every moment,\nMy heart holds you close.",
+            "The way that you smile,\nMakes my world feel whole and bright,\nI adore all you.",
+            "You grow stronger still,\nI marvel at the strength you show,\nMy pride is for you.",
+            "I see all your truth,\nA deep love that will not fade,\nYou are precious light.",
+            "Your bright, gentle heart,\nA garden I watch unfold,\nPure love, truly you.",
+            "We sit in peace,\nKnowing silence speaks our bond,\nThank you for your grace.",
+            "Through the storm, you stand,\nMy steady, reliable calm,\nAlways holding fast.",
+            "You know what I need,\nWithout a single word said,\nSuch a deep connection.",
+            "You are all I seek,\nMore valuable than gold now,\nMy life's precious find.",
+            "Your presence is bright,\nIt warms me from the inside,\nNever growing cold.",
+            "You hear all my fears,\nAnd hold them softly in your hands,\nWith patient kindness.",
+            "This love will not end,\nI look forward to our years,\nSharing life with you.",
+            "I watch how you move,\nA gentle and amazing soul,\nYou inspire me.",
+            "The sound of your laugh,\nA pure music in the air,\nHappiest with you.",
+            "The beauty of you,\nIt deepens with every day,\nA soul I admire.",
+            "Every part of you,\nI hold it in my careful thoughts,\nAlways treasured, dear.",
+            "We share knowing looks,\nA language just understood,\nLove is silent here.",
+            "My promise to you,\nTo love you deeply, always,\nMy faith is in you.",
+            "There is no one else,\nWho could ever fill your space,\nYou complete my world.",
+            "You hold up my sky,\nGiving me the strength to stand,\nMy solid bedrock.",
+            "I study your face,\nFinding new depths every time,\nYou hold my gaze still.",
+            "I dedicate mine,\nTo the joy of loving you,\nSteady, lifelong gift.",
+            "You settle my soul,\nBringing stillness to the rush,\nPeace lives within you.",
+            "You challenge my mind,\nTo be better than I am,\nThank you for your light.",
+            "Our futures align,\nI look forward to our day,\nWalking this life with you.",
+            "I recall the start,\nThat instant I knew you were mine,\nLove's first spark for you.",
+            "My love stays with you,\nNo wandering or shifting thought,\nMy faith is your own.",
+            "No one else is quite,\nThe perfect soul that you are,\nMy one rarity.",
+            "Our two hearts are joined,\nIn a pattern made of love,\nForever entwined.",
+            "You make things so clear,\nWashing shadows from my mind,\nMy truth is with you.",
+            "My happiness soars,\nWhenever you are laughing,\nJoy overflows then.",
+            "Like a warm soft drink,\nYou comfort every cold spot,\nResting near to you.",
+            "The way that you think,\nDeep and wonderful ideas,\nYou amaze me still.",
+            "You fit in my life,\nFilling the spaces I missed,\nMy missing true half.",
+            "I give you my life,\nA choice made freely each day,\nMy love stays for you.",
+            "You shine in the dark,\nShowing me where I must step,\nAlways leading me.",
+            "The best thing I have,\nIs this deep love shared with you,\nYou are my rich gain.",
+            "My soul speaks to yours,\nA quiet language only ours,\nYou hear my true wish.",
+            "Your presence is peace,\nThe only place I belong,\nMy heart settled here.",
+            "I thank you for you,\nFor every kind thing you do,\nMy life is better.",
+            "This is easy, clear,\nLoving you is natural,\nA perfect fit found.",
+            "You handle my soul,\nWith such gentle care and grace,\nNever hurting me.",
+            "Your values are strong,\nA moral compass I trust,\nI respect your heart.", 
+            "No fear touches me,\nWrapped safely within your care,\nI am always sound.",
+            "My eyes are on you,\nYou are the most important thing,\nMy cherished bright view.",
+            "I remember when,\nYour soft words first captured mine,\nSweet memory stays.",
+            "Every morning breaks,\nAnd I choose to love you still,\nA willing promise.",
+            "If you were not here,\nThe world would feel empty then,\nYou are everything.",
+            "You fit in my life,\nFilling the spaces I missed,\nMy missing true half.",
+            "The sound of your voice,\nA melodic, gentle stream,\nBrings comfort to me.",
+            "You are the light, dear,\nMy guiding star across space,\nLove is our compass.",
+            "Our love is a dance,\nEven miles can’t break the beat,\nSoon we’ll be together."
+        ];
+        // ** END OF HAIKU CONTENT **
+
+        const COLOR_SETS = [
+            '#FFDDE2', // 0: Default (Warm Pink)
+            '#FFE3D3', // 1: Peach/Apricot
+            '#D3F0FF', // 2: Light Sky Blue (Cooler Tone)
+            '#E2FFD3', // 3: Pale Green (Fresh Tone)
+            '#FFD3FF'  // 4: Lavender/Light Purple
+        ];
+        const HAJKUS_PER_COLOR = 13; 
+
+        let currentHaikuIndex = 0;
+        const totalHaikus = haikus.length; 
+        let timeUpdateInterval; 
+        let isTyping = false; 
+
+        const landingPage = document.getElementById('landing-page');
+        const haikuViewer = document.getElementById('haiku-viewer');
+        const finalScreen = document.getElementById('final-screen');
+        const beginButton = document.getElementById('begin-button');
+        const haikuContent = document.getElementById('haiku-content');
+        const currentHaikuSpan = document.getElementById('current-haiku');
+        const nextButton = document.getElementById('next-button');
+        const backButton = document.getElementById('back-button');
+        const restartButton = document.getElementById('restart-button'); 
+        const container = document.querySelector('.container');
+        const body = document.body;
+        const progressBar = document.getElementById('progress-bar'); 
+        const currentTimeSpan = document.getElementById('current-time');
+        const haikuCounter = document.getElementById('haiku-counter');
+        const secretMessage = document.getElementById('secret-message');
+
+        // Time-Stamp Logic
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+            currentTimeSpan.textContent = `Reading at ${timeString}`;
+        }
+
+        // Color and Progress Logic
+        function updateProgressAndColor() {
+            const progress = ((currentHaikuIndex + 1) / totalHaikus) * 100;
+            progressBar.style.width = progress + '%';
+
+            const colorIndex = Math.floor(currentHaikuIndex / HAJKUS_PER_COLOR);
+            const newColor = COLOR_SETS[colorIndex % COLOR_SETS.length];
+            
+            body.classList.add('color-transition');
+            body.style.setProperty('--haiku-bg-color', newColor);
+        }
+
+        // Focus Shift (Brief Counter Flash) Logic
+        function updateFocusShift() {
+            haikuCounter.classList.add('counter-flash');
+            setTimeout(() => {
+                haikuCounter.classList.remove('counter-flash');
+            }, 500);
+        }
+        
+        // Typewriter Effect Logic (FIXED BUTTON RE-ENABLEMENT)
+        function typewriterEffect(text, element) {
+            isTyping = true;
+            element.textContent = '';
+            
+            const formattedText = text.replace(/\\n/g, '\n'); 
+            let i = 0;
+            
+            function type() {
+                if (i < formattedText.length) {
+                    element.textContent += formattedText.charAt(i);
+                    i++;
+                    setTimeout(type, 35); 
+                } else {
+                    isTyping = false;
+                    
+                    // Re-enable buttons only after typing is complete
+                    backButton.disabled = currentHaikuIndex === 0;
+                    nextButton.disabled = false; // CRITICAL FIX: Re-enable the next button after typing
+                }
+            }
+            type();
+        }
+
+        // Function to update the displayed haiku
+        function updateHaiku(direction) {
+            // Disable buttons during transition/typing
+            nextButton.disabled = true;
+            backButton.disabled = true;
+
+            // Reset button text
+            nextButton.textContent = 'Next';
+
+            // Flash counter if moving forward
+            if (direction === 'next') {
+                updateFocusShift();
+            }
+
+            // Start typewriter effect
+            typewriterEffect(haikus[currentHaikuIndex], haikuContent);
+            currentHaikuSpan.textContent = currentHaikuIndex + 1;
+            
+            // Ensure 'Finish Gift' button text is set
+            if (currentHaikuIndex === totalHaikus - 1) {
+                nextButton.textContent = 'Finish Gift 🎉';
+            }
+            
+            updateProgressAndColor();
+        }
+
+        // Event listeners
+        document.getElementById('total-haikus').textContent = totalHaikus;
+
+        // Function to restart the entire website
+        function restartWebsite() {
+            container.style.opacity = '0';
+            currentHaikuIndex = 0;
+            secretMessage.classList.remove('revealed');
+
+            timeUpdateInterval = setInterval(updateTime, 1000); 
+            updateTime(); 
+
+            setTimeout(() => {
+                finalScreen.style.display = 'none';
+                haikuViewer.style.display = 'block';
+                updateHaiku('start'); 
+                container.style.opacity = '1';
+            }, 1000);
+        }
+
+
+        beginButton.addEventListener('click', () => {
+            container.style.opacity = '0';
+
+            timeUpdateInterval = setInterval(updateTime, 1000); 
+            updateTime(); 
+
+            setTimeout(() => {
+                landingPage.style.display = 'none';
+                haikuViewer.style.display = 'block';
+                updateHaiku('start'); 
+                container.style.opacity = '1'; 
+            }, 1000);
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (isTyping) return; 
+
+            if (currentHaikuIndex < totalHaikus - 1) {
+                currentHaikuIndex++;
+                updateHaiku('next');
+            } else if (currentHaikuIndex === totalHaikus - 1) {
+                // If on the last haiku, transition to final screen
+                container.style.opacity = '0';
+                
+                clearInterval(timeUpdateInterval); 
+
+                body.style.setProperty('--haiku-bg-color', COLOR_SETS[0]); 
+
+                setTimeout(() => {
+                    haikuViewer.style.display = 'none';
+                    finalScreen.style.display = 'block';
+                    container.style.opacity = '1';
+                }, 1000);
+            }
+        });
+
+        backButton.addEventListener('click', () => {
+            if (isTyping) return; 
+
+            if (currentHaikuIndex > 0) {
+                currentHaikuIndex--;
+                updateHaiku('back');
+            }
+        });
+        
+        restartButton.addEventListener('click', restartWebsite);
+
+        // Hidden Message Unlock Listener (FIXED: Only relies on JS click/tap)
+        finalScreen.addEventListener('click', () => {
+            secretMessage.classList.add('revealed');
+        });
+    </script>
+</body>
+</html>
